@@ -2,10 +2,8 @@ package.path = "./lua/htmlparser/?.lua;" .. package.path;
 local htmlparser = require("htmlparser");
 
 
-
-
-ip = nil;
  function iteratedom(dom)
+    local ip;
     if "input" == dom.name then
         if dom.attributes.id and "address" == dom.attributes.id and dom.attributes.value then
             ip =  dom.attributes.value;
@@ -13,17 +11,19 @@ ip = nil;
     end
     if nil == ip then
         for i,v in ipairs(dom.nodes) do
-            iteratedom(v);
+            ip = iteratedom(v);
+            if ip then
+                break;
+            end
         end
     end
-end
-
-function searchip(rawhtml)
-    iteratedom(htmlparser.parse(rawhtml));
-end
-
-function getip()
-    print(ip);
     return ip;
 end
+
+function getip(rawhtml)   
+    local ip = iteratedom(htmlparser.parse(rawhtml,10000));
+    return ip;
+end
+
+
 

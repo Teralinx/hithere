@@ -20,8 +20,20 @@ target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAK
 target_link_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 #link libs
-target_link_libraries(hithere libcurl.lib htmlcxx.lib lualib.lib)
 #copy runtime files
+
+include(FetchContent)
+# FetchContent_Declare(lua
+#                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compilelualib)
+# FetchContent_MakeAvailable(lua)
+
+
+FetchContent_Declare(lua
+                     GIT_REPOSITORY https://github.com/Teralinx/compilelualib
+                     GIT_TAG        1.0)
+FetchContent_MakeAvailable(lua)
+
+target_link_libraries(hithere PRIVATE libcurl.lib PRIVATE htmlcxx.lib PRIVATE lualib)
 
 add_custom_command(TARGET hithere POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory 
