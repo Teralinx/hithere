@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD 17)
 project(hithere)
 
 #add source
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src luafilesource)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src hitheresource)
 
 #add target
-add_executable(hithere ${luafilesource})
+add_executable(hithere ${hitheresource})
 
 #add headers
 target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -30,7 +30,7 @@ include(FetchContent)
 
 FetchContent_Declare(lua
                      GIT_REPOSITORY https://github.com/Teralinx/compilelualib
-                     GIT_TAG        1.0)
+                     GIT_TAG        3.0)
 FetchContent_MakeAvailable(lua)
 
 target_link_libraries(hithere PRIVATE libcurl.lib PRIVATE htmlcxx.lib PRIVATE lualib)
@@ -45,8 +45,3 @@ add_custom_command(TARGET hithere POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory 
                 ${CMAKE_CURRENT_SOURCE_DIR}/runtime
                 ${CMAKE_CURRENT_BINARY_DIR})
-# add_custom_command(TARGET hithere POST_BUILD
-#                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/runtime/lua
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/runtime/libcurl.dll
-#                 $<TARGET_FILE_DIR:hithere>)
