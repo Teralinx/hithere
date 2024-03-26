@@ -13,26 +13,32 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src hitheresource)
 #add target
 add_executable(hithere ${hitheresource})
 
-#add headers
-target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-#add libdirs
-target_link_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 #link libs
 #copy runtime files
 
-include(FetchContent)
+# include(FetchContent)
 # FetchContent_Declare(lua
 #                     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compilelualib)
 # FetchContent_MakeAvailable(lua)
 
+# include(FetchContent)
+# FetchContent_Declare(lua
+#                      GIT_REPOSITORY https://github.com/Teralinx/compilelualib
+#                      GIT_TAG        3.0)
+# FetchContent_MakeAvailable(lua)
 
-FetchContent_Declare(lua
-                     GIT_REPOSITORY https://github.com/Teralinx/compilelualib
-                     GIT_TAG        3.0)
-FetchContent_MakeAvailable(lua)
 
+
+
+find_package(lua REQUIRED)
+
+#add headers
+target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include ${lua_INCLUDE_DIRS})
+
+#add libdirs
+target_link_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib ${lua_LINK_DIRS})
 target_link_libraries(hithere PRIVATE libcurl.lib PRIVATE htmlcxx.lib PRIVATE lualib)
 
 add_custom_command(TARGET hithere POST_BUILD
