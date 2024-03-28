@@ -55,30 +55,10 @@ add_custom_command(TARGET hithere POST_BUILD
 
 
 #tests
- set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-# enable_testing()
-# add_executable(test_global  ${testdir}/test_global.cpp)
-# target_link_libraries(test_global GTest::gtest  GTest::gtest_main)  
-# include(GoogleTest)
-# gtest_discover_tests(GoogleTest)
-
+set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 enable_testing()
-
-add_executable(
-  hello_test
-  hello_test.cc
-)
-target_link_libraries(
-  hello_test
-  GTest::gtest_main
-)
-
+add_executable(global_test  ${testdir}/global_test.cpp)
+target_link_libraries(global_test  GTest::gtest_main)  
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(global_test)
 
-
-# add_executable(test_global  ${testdir}/test_global.cpp)
-# target_link_libraries(test_global GTest::gtest  GTest::gtest_main)  
-# gtest_discover_tests(test_global)
-
-# add_test(test_global ${CMAKE_BINARY_DIR}/test_global)
