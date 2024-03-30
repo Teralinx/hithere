@@ -1,9 +1,6 @@
 package.path = "./lua/htmlparser/?.lua;" .. package.path;
 local htmlparser = require("htmlparser");
 
-function accessWebAddr()
-    return "https://ip.tool.chinaz.com/";
-end
 
  function iteratedom(dom)
     local ip;

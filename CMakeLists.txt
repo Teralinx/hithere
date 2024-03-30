@@ -16,20 +16,44 @@ add_executable(hithere ${hitheresource} ${headers})
 
 #add dependencies
 include(FetchContent)
-FetchContent_Declare(lua
-                     GIT_REPOSITORY https://github.com/Teralinx/compilelualib
-                     GIT_TAG        3.0)
-FetchContent_MakeAvailable(lua)
+
 FetchContent_Declare(spdlog
                      GIT_REPOSITORY https://github.com/gabime/spdlog
                      GIT_TAG        v1.13.0)
 FetchContent_MakeAvailable(spdlog)
+
+
 FetchContent_Declare(googletest
                      GIT_REPOSITORY https://github.com/google/googletest
                      GIT_TAG        v1.14.0)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+FetchContent_Declare(
+    lua
+    URL https://www.lua.org/ftp/lua-5.4.6.tar.gz
+
+)
+
+FetchContent_Populate(lua)
+
+
+file(WRITE ${lua_SOURCE_DIR}/CMakeLists.txt 
+"aux_source_directory(${lua_SOURCE_DIR}/src luasource) 
+ list(REMOVE_ITEM MY_LIST \"lua.c\") 
+ list(REMOVE_ITEM MY_LIST \"luac.c\") 
+ add_library(lua \${luasource}) 
+ target_include_directories(lua PUBLIC ${lua_SOURCE_DIR}/src) ")
+
+add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
+
+FetchContent_Declare(
+  sol2
+  GIT_REPOSITORY https://github.com/ThePhD/sol2.git
+  GIT_TAG        v3.2.3
+)
+
+FetchContent_MakeAvailable(sol2)
 
 #add headers
 target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include )
@@ -38,7 +62,7 @@ target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAK
 target_link_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 #add libs
-target_link_libraries(hithere PRIVATE libcurl.lib PRIVATE htmlcxx.lib PRIVATE lualib)
+target_link_libraries(hithere  libcurl.lib  spdlog  lua sol2)
 
 
 #copy files of runtime to binary directory
@@ -54,11 +78,19 @@ add_custom_command(TARGET hithere POST_BUILD
                 ${CMAKE_CURRENT_BINARY_DIR})
 
 
+
+
 #tests
-set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/test)
 enable_testing()
-add_executable(global_test  ${testdir}/global_test.cpp)
-target_link_libraries(global_test  GTest::gtest_main)  
+add_executable(global_test  ${testdir}/global_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/global.cpp)
+target_include_directories(global_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_link_directories(global_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+target_link_libraries(global_test GTest::gtest GTest::gtest_main libcurl.lib spdlog lua sol2)
 include(GoogleTest)
 gtest_discover_tests(global_test)
 
+add_custom_command(TARGET global_test POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_directory 
+${CMAKE_CURRENT_SOURCE_DIR}/test/testdata
+$<TARGET_FILE_DIR:global_test>/test/testdata)
