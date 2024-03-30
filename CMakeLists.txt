@@ -29,23 +29,48 @@ FetchContent_Declare(googletest
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+
+
+
+
+
+# set(PACKAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lua-5.4.6.tar.gz")
+# set(EXTRACT_DIR "${CMAKE_CURRENT_BINARY_DIR}/extractdir/lua")
+
+# file(ARCHIVE_EXTRACT
+#   INPUT ${PACKAGE_PATH}
+#   DESTINATION ${EXTRACT_DIR}
+# )
+
+# FetchContent_Declare(
+#     lua
+#     SOURCE_DIR ${EXTRACT_DIR}/lua-5.4.6
+# )
+
+
+# file(WRITE ${EXTRACT_DIR}/lua-5.4.6/CMakeLists.txt 
+# "aux_source_directory(${EXTRACT_DIR}/lua-5.4.6/src luasource) 
+#  list(REMOVE_ITEM MY_LIST \"lua.c\") 
+#  list(REMOVE_ITEM MY_LIST \"luac.c\") 
+#  add_library(lua \${luasource}) 
+#  target_include_directories(lua PUBLIC ${EXTRACT_DIR}/lua-5.4.6/src) ")
+#  FetchContent_MakeAvailable(lua)
+
 FetchContent_Declare(
     lua
     URL https://www.lua.org/ftp/lua-5.4.6.tar.gz
-
 )
-
 FetchContent_Populate(lua)
-
-
 file(WRITE ${lua_SOURCE_DIR}/CMakeLists.txt 
-"aux_source_directory(${lua_SOURCE_DIR}/src luasource) 
- list(REMOVE_ITEM MY_LIST \"lua.c\") 
- list(REMOVE_ITEM MY_LIST \"luac.c\") 
+"aux_source_directory(${lua_SOURCE_DIR}/src luasource)
+
+ list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/lua.c\") 
+ list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/luac.c\") 
  add_library(lua \${luasource}) 
  target_include_directories(lua PUBLIC ${lua_SOURCE_DIR}/src) ")
-
 add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
+
+
 
 FetchContent_Declare(
   sol2

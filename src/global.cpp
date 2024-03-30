@@ -39,9 +39,8 @@ bool getpublicipaddress(std::string& strip)
 	//use sol2 to load the lua file
 	sol::state lua;
 	
-	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string);
-
-//	lua.script(" a = 1");
+	//lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string);
+	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string,  sol::lib::table);
 	lua.script_file("lua/main.lua");
 	//call lua function to get the web address
 	sol::function accessWebAddr = lua["accessWebAddr"];
@@ -56,9 +55,17 @@ bool getpublicipaddress(std::string& strip)
 
 	if (success == CURLE_OK)
 	{
-		sol::function getip = lua["getip"];
-		strip = getip(strReceived.c_str());
-		
+		sol::protected_function  getip = lua["getip"];
+		sol::protected_function_result result = getip(strReceived.c_str());
+		if (!result.valid()) {
+			sol::error err = result;
+			std::string what = err.what();
+			QUICKLOG( what);
+		}
+		else {
+			strip = result;
+			std::cout << strip;
+		}
 		return true;
 	}
 	else
@@ -68,5 +75,6 @@ bool getpublicipaddress(std::string& strip)
 	curl_easy_cleanup(handle);
 
 
+	
 	return true;
 }

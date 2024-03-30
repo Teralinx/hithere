@@ -23,7 +23,7 @@ end
     return ip;
 end
 
-function getip(rawhtml)   
+function getip(rawhtml)
     local ip = iteratedom(htmlparser.parse(rawhtml,10000));
     return ip;
 end
