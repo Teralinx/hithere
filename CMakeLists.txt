@@ -12,8 +12,8 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src hitheresource)
 #add headers
 FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 #add target
-add_executable(hithere ${hitheresource} ${headers})
-
+list(REMOVE_ITEM hitheresource ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+add_library(hitherelib ${hitheresource} ${headers})
 #add dependencies
 include(FetchContent)
 
@@ -22,41 +22,6 @@ FetchContent_Declare(spdlog
                      GIT_TAG        v1.13.0)
 FetchContent_MakeAvailable(spdlog)
 
-
-FetchContent_Declare(googletest
-                     GIT_REPOSITORY https://github.com/google/googletest
-                     GIT_TAG        v1.14.0)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-
-
-
-
-
-
-
-# set(PACKAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lua-5.4.6.tar.gz")
-# set(EXTRACT_DIR "${CMAKE_CURRENT_BINARY_DIR}/extractdir/lua")
-
-# file(ARCHIVE_EXTRACT
-#   INPUT ${PACKAGE_PATH}
-#   DESTINATION ${EXTRACT_DIR}
-# )
-
-# FetchContent_Declare(
-#     lua
-#     SOURCE_DIR ${EXTRACT_DIR}/lua-5.4.6
-# )
-
-
-# file(WRITE ${EXTRACT_DIR}/lua-5.4.6/CMakeLists.txt 
-# "aux_source_directory(${EXTRACT_DIR}/lua-5.4.6/src luasource) 
-#  list(REMOVE_ITEM MY_LIST \"lua.c\") 
-#  list(REMOVE_ITEM MY_LIST \"luac.c\") 
-#  add_library(lua \${luasource}) 
-#  target_include_directories(lua PUBLIC ${EXTRACT_DIR}/lua-5.4.6/src) ")
-#  FetchContent_MakeAvailable(lua)
 
 FetchContent_Declare(
     lua
@@ -94,15 +59,16 @@ set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(linklibs libcurl  spdlog lua sol2 )
 
 #add headers
-target_include_directories(hithere PUBLIC  ${includeDirectories})
+target_include_directories(hitherelib PUBLIC  ${includeDirectories})
 
 #add libdirs
-target_link_directories(hithere PUBLIC ${linkDirectories})
+target_link_directories(hitherelib PUBLIC ${linkDirectories})
 
 #add libs
-target_link_libraries(hithere  ${linklibs})
+target_link_libraries(hitherelib  ${linklibs})
 
-
+add_executable(hithere ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+target_link_libraries(hithere hitherelib)
 #copy files of runtime to binary directory
 add_custom_command(TARGET hithere POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory 
@@ -116,19 +82,7 @@ add_custom_command(TARGET hithere POST_BUILD
                 ${CMAKE_CURRENT_BINARY_DIR})
 
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
 
 
-#tests
-set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/test)
-enable_testing()
-add_executable(global_test  ${testdir}/global_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/global.cpp)
-target_include_directories(global_test PUBLIC ${includeDirectories} )
-target_link_directories(global_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-target_link_libraries(global_test GTest::gtest GTest::gtest_main libcurl.lib spdlog lua sol2)
-include(GoogleTest)
-gtest_discover_tests(global_test)
 
-add_custom_command(TARGET global_test POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_directory 
-${CMAKE_CURRENT_SOURCE_DIR}/test/testdata
-$<TARGET_FILE_DIR:global_test>/test/testdata)
