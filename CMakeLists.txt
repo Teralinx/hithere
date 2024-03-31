@@ -34,6 +34,8 @@ FetchContent_MakeAvailable(googletest)
 
 
 
+
+
 # set(PACKAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/lua-5.4.6.tar.gz")
 # set(EXTRACT_DIR "${CMAKE_CURRENT_BINARY_DIR}/extractdir/lua")
 
@@ -63,10 +65,9 @@ FetchContent_Declare(
 FetchContent_Populate(lua)
 file(WRITE ${lua_SOURCE_DIR}/CMakeLists.txt 
 "aux_source_directory(${lua_SOURCE_DIR}/src luasource)
-
  list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/lua.c\") 
  list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/luac.c\") 
- add_library(lua \${luasource}) 
+ add_library(lua STATIC \${luasource}) 
  target_include_directories(lua PUBLIC ${lua_SOURCE_DIR}/src) ")
 add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
 
@@ -77,17 +78,29 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/ThePhD/sol2.git
   GIT_TAG        v3.2.3
 )
-
 FetchContent_MakeAvailable(sol2)
 
+
+
+FetchContent_Declare(
+  asio
+  URL https://github.com/chriskohlhoff/asio/archive/asio-1-18-2.tar.gz
+)
+  FetchContent_Populate(asio)
+
+
+set(includeDirectories ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include ${asio_SOURCE_DIR}/asio/include)
+set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(linklibs libcurl  spdlog lua sol2 )
+
 #add headers
-target_include_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(hithere PUBLIC  ${includeDirectories})
 
 #add libdirs
-target_link_directories(hithere PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+target_link_directories(hithere PUBLIC ${linkDirectories})
 
 #add libs
-target_link_libraries(hithere  libcurl.lib  spdlog  lua sol2)
+target_link_libraries(hithere  ${linklibs})
 
 
 #copy files of runtime to binary directory
@@ -109,7 +122,7 @@ add_custom_command(TARGET hithere POST_BUILD
 set(testdir ${CMAKE_CURRENT_SOURCE_DIR}/test)
 enable_testing()
 add_executable(global_test  ${testdir}/global_test.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/global.cpp)
-target_include_directories(global_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include )
+target_include_directories(global_test PUBLIC ${includeDirectories} )
 target_link_directories(global_test PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 target_link_libraries(global_test GTest::gtest GTest::gtest_main libcurl.lib spdlog lua sol2)
 include(GoogleTest)

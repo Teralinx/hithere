@@ -21,3 +21,11 @@ void logerror(const std::string& msg, const std::string& filename, const std::st
 */
 bool getpublicipaddress(std::string& strip);
 
+
+
+
+
+
+
+
+
