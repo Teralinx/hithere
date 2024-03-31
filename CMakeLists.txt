@@ -32,8 +32,11 @@ file(WRITE ${lua_SOURCE_DIR}/CMakeLists.txt
 "aux_source_directory(${lua_SOURCE_DIR}/src luasource)
  list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/lua.c\") 
  list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/luac.c\") 
- add_library(lua STATIC \${luasource}) 
- target_include_directories(lua PUBLIC ${lua_SOURCE_DIR}/src) ")
+ add_library(lualib STATIC \${luasource})
+ add_library(luadll SHARED \${luasource})
+ add_executable(lua \${luasource} \"${lua_SOURCE_DIR}/src/lua.c\")
+ add_executable(luac \${luasource} \"${lua_SOURCE_DIR}/src/luac.c\")
+ target_include_directories(lualib PUBLIC ${lua_SOURCE_DIR}/src) ")
 add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
 
 
@@ -54,9 +57,9 @@ FetchContent_Declare(
   FetchContent_Populate(asio)
 
 
-set(includeDirectories $${headers} ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/include ${asio_SOURCE_DIR}/asio/include)
+set(includeDirectories ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/include ${asio_SOURCE_DIR}/asio/include)
 set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/lib)
-set(linklibs libcurl  spdlog lua sol2 )
+set(linklibs libcurl  spdlog lualib sol2 )
 
 #add headers
 target_include_directories(hitherelib PUBLIC  ${includeDirectories})

@@ -17,10 +17,8 @@ function(add_test name)
     gtest_discover_tests(${name}_test)
 endfunction()
 
-
-
-
-
 add_test("global")
 
 add_test("udprecv")
+
+add_test("udpsend")
