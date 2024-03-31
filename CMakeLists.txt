@@ -54,8 +54,8 @@ FetchContent_Declare(
   FetchContent_Populate(asio)
 
 
-set(includeDirectories ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include ${asio_SOURCE_DIR}/asio/include)
-set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(includeDirectories $${headers} ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/include ${asio_SOURCE_DIR}/asio/include)
+set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/lib)
 set(linklibs libcurl  spdlog lua sol2 )
 
 #add headers
