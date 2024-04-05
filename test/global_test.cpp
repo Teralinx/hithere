@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <curl/curl.h>
 #include <asio.hpp>
+#include <thread>
 
 
 TEST(GETIP_TEST, NORAMAL) {

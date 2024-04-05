@@ -1,9 +1,10 @@
 #CMake version
-cmake_minimum_required(VERSION 3.29.0)
+cmake_minimum_required(VERSION 3.25.1)
 
 #set language standard
 set(CMAKE_CXX_STANDARD 17)
-
+#set compiling code of irrelevent posion
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 #set project name
 project(hithere)
 
@@ -13,7 +14,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src hitheresource)
 FILE(GLOB_RECURSE headers CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
 #add target
 list(REMOVE_ITEM hitheresource ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-add_library(hitherelib ${hitheresource} ${headers})
+add_library(hitherelib STATIC ${hitheresource} ${headers})
 #add dependencies
 include(FetchContent)
 
@@ -21,7 +22,6 @@ FetchContent_Declare(spdlog
                      GIT_REPOSITORY https://github.com/gabime/spdlog
                      GIT_TAG        v1.13.0)
 FetchContent_MakeAvailable(spdlog)
-
 
 FetchContent_Declare(
     lua
@@ -34,9 +34,15 @@ file(WRITE ${lua_SOURCE_DIR}/CMakeLists.txt
  list(REMOVE_ITEM luasource \"${lua_SOURCE_DIR}/src/luac.c\") 
  add_library(lualib STATIC \${luasource})
  add_library(luadll SHARED \${luasource})
- add_executable(lua \${luasource} \"${lua_SOURCE_DIR}/src/lua.c\")
- add_executable(luac \${luasource} \"${lua_SOURCE_DIR}/src/luac.c\")
- target_include_directories(lualib PUBLIC ${lua_SOURCE_DIR}/src) ")
+ add_executable(lua \"${lua_SOURCE_DIR}/src/lua.c\")
+ add_executable(luac \"${lua_SOURCE_DIR}/src/luac.c\")
+ target_include_directories(lualib PUBLIC ${lua_SOURCE_DIR}/src)
+ if(\${CMAKE_SYSTEM_NAME} MATCHES \"Linux\")
+ target_link_libraries(lualib m)
+ target_link_libraries(luadll m)
+ endif()
+ target_link_libraries(lua lualib) 
+ target_link_libraries(luac lualib) ")
 add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
 
 
@@ -54,24 +60,29 @@ FetchContent_Declare(
   asio
   URL https://github.com/chriskohlhoff/asio/archive/asio-1-18-2.tar.gz
 )
-  FetchContent_Populate(asio)
+FetchContent_Populate(asio)
+
+FetchContent_Declare(
+  curl
+  GIT_REPOSITORY https://github.com/curl/curl.git
+  GIT_TAG        curl-7_79_1 # replace with the tag you want
+)
+FetchContent_MakeAvailable(curl)
 
 
-set(includeDirectories ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/include ${asio_SOURCE_DIR}/asio/include)
-set(linkDirectories ${CMAKE_CURRENT_SOURCE_DIR}/3thlibs/curl/lib)
-set(linklibs libcurl  spdlog lualib sol2 )
+
 
 #add headers
-target_include_directories(hitherelib PUBLIC  ${includeDirectories})
-
-#add libdirs
-target_link_directories(hitherelib PUBLIC ${linkDirectories})
+target_include_directories(hitherelib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src PUBLIC  ${asio_SOURCE_DIR}/asio/include)
 
 #add libs
-target_link_libraries(hitherelib  ${linklibs})
+target_link_libraries(hitherelib  PUBLIC spdlog PUBLIC lualib PUBLIC sol2 PUBLIC libcurl)
 
 add_executable(hithere ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 target_link_libraries(hithere hitherelib)
+
+
+
 #copy files of runtime to binary directory
 add_custom_command(TARGET hithere POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory 
@@ -85,7 +96,9 @@ add_custom_command(TARGET hithere POST_BUILD
                 ${CMAKE_CURRENT_BINARY_DIR})
 
 
+#test directory
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
+
 
 
 
